@@ -53,9 +53,13 @@ If there are no clear tasks, return [].`;
         const rawText = aiRes.text || '[]';
         const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
         
-        const tasks = JSON.parse(cleanText);
+        let parsed = JSON.parse(cleanText);
+        // Sometimes the AI returns { tasks: [...] } instead of [...]
+        let tasks = Array.isArray(parsed) ? parsed : (parsed.tasks || []);
+
         if (Array.isArray(tasks) && tasks.length > 0) {
           for (const task of tasks) {
+            if (!task.description || !task.dueDate) continue;
             await prisma.action.create({
               data: { partnerId, description: task.description, dueDate: new Date(task.dueDate) }
             });
@@ -63,6 +67,8 @@ If there are no clear tasks, return [].`;
               data: { partnerId, type: 'System', content: `AI auto-created task: ${task.description}` }
             });
           }
+        } else {
+          console.error("AI parsed successfully but found no valid tasks array. Raw output:", cleanText);
         }
       } catch (aiError) {
         console.error('AI error:', aiError);
