@@ -49,7 +49,11 @@ If there are no clear tasks, return [].`;
             config: { responseMimeType: "application/json" }
         });
         
-        const tasks = JSON.parse(aiRes.text || '[]');
+        // Strip potential markdown blocks just in case
+        const rawText = aiRes.text || '[]';
+        const cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+        
+        const tasks = JSON.parse(cleanText);
         if (Array.isArray(tasks) && tasks.length > 0) {
           for (const task of tasks) {
             await prisma.action.create({

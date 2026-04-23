@@ -7,6 +7,22 @@ import { formatDistanceToNow, format } from 'date-fns';
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
+  // 0. Auto-seed products if empty
+  const productCount = await prisma.product.count();
+  if (productCount === 0) {
+    const defaultProducts = [
+      'Card Acceptance', 'Wallet Acceptance', 'Erada Financing', 
+      'Loyalty', 'EBU', 'Cash Collection', 'HR Payroll', 'HR Salary in advance'
+    ];
+    for (const name of defaultProducts) {
+      await prisma.product.upsert({
+        where: { name },
+        update: {},
+        create: { name }
+      });
+    }
+  }
+
   // 1. Fetch real stats
   const totalLeads = await prisma.partner.count();
   const activeDeals = await prisma.partner.count({

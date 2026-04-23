@@ -63,9 +63,6 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>PENDING TASKS</h2>
-          <button className={styles.logCallBtn}>
-            <PhoneCall size={14} /> LOG CALL
-          </button>
         </div>
         
         <div className={styles.taskList}>
