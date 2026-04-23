@@ -9,6 +9,7 @@ import Link from 'next/link';
 export default function NewPartnerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [customIndustry, setCustomIndustry] = useState('');
   const [formData, setFormData] = useState({
     companyName: '',
     industryCategory: '',
@@ -22,11 +23,16 @@ export default function NewPartnerPage() {
     e.preventDefault();
     setLoading(true);
     
+    const payload = {
+      ...formData,
+      industryCategory: formData.industryCategory === 'Other' ? customIndustry : formData.industryCategory
+    };
+
     try {
       const res = await fetch('/api/partners', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
       
       if (res.ok) {
@@ -78,9 +84,15 @@ export default function NewPartnerPage() {
               <option value="Healthcare">Healthcare</option>
               <option value="SaaS / Enterprise">SaaS / Enterprise</option>
               <option value="Automotive">Automotive</option>
-              <option value="Other">Other</option>
+              <option value="Other">Other (Custom)</option>
             </select>
           </div>
+          
+          {formData.industryCategory === 'Other' && (
+            <div className={styles.inputGroup} style={{ marginTop: '-8px' }}>
+              <input required type="text" value={customIndustry} onChange={e => setCustomIndustry(e.target.value)} placeholder="Type custom industry..." />
+            </div>
+          )}
           
           <div className={styles.inputGroup}>
             <label>Lead Source</label>

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { Plus, Edit2, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export default async function PartnersPage() {
   const partners = await prisma.partner.findMany({
     include: {

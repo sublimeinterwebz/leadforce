@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import styles from './page.module.css';
 import { Filter, AlertTriangle } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReportsPage() {
   // Fetch real counts for the funnel
   const discoveryCount = await prisma.partner.count({ where: { overallStage: 'Discovery' } });
@@ -13,6 +15,14 @@ export default async function ReportsPage() {
   const products = await prisma.product.findMany({
     include: { _count: { select: { partners: true } } },
     orderBy: { partners: { _count: 'desc' } }
+  });
+
+  // Fetch real sector distribution
+  const totalPartnersForSector = discoveryCount + scopeCount + commitCount + contractCount || 1; // avoid div by 0
+  const industryDistribution = await prisma.partner.groupBy({
+    by: ['industryCategory'],
+    _count: { id: true },
+    orderBy: { _count: { id: 'desc' } }
   });
 
   return (
@@ -86,18 +96,24 @@ export default async function ReportsPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>SECTOR DISTRIBUTION</h2>
         <ul className={styles.distList}>
-          <li className={styles.distItem}>
-            <div className={styles.distLeft}><span className={styles.dot} style={{ background: 'var(--primary)' }} /> FinTech</div>
-            <div className={styles.distRight}>42%</div>
-          </li>
-          <li className={styles.distItem}>
-            <div className={styles.distLeft}><span className={styles.dot} style={{ background: 'var(--secondary)' }} /> Healthcare</div>
-            <div className={styles.distRight}>28%</div>
-          </li>
-          <li className={styles.distItem}>
-            <div className={styles.distLeft}><span className={styles.dot} style={{ background: 'var(--tertiary)' }} /> Retail</div>
-            <div className={styles.distRight}>18%</div>
-          </li>
+          {industryDistribution.length === 0 && <p style={{ fontSize: '0.8rem', color: 'var(--neutral-500)', padding: 12 }}>No data available yet.</p>}
+          {industryDistribution.map((sector, index) => {
+            const colors = ['var(--primary)', 'var(--secondary)', 'var(--tertiary)', '#F59E0B', '#8B5CF6'];
+            const color = colors[index % colors.length];
+            // Just calculating percentage relative to active deals for UI purposes
+            const total = industryDistribution.reduce((acc, curr) => acc + curr._count.id, 0);
+            const percentage = Math.round((sector._count.id / total) * 100);
+            
+            return (
+              <li key={sector.industryCategory || 'unknown'} className={styles.distItem}>
+                <div className={styles.distLeft}>
+                  <span className={styles.dot} style={{ background: color }} /> 
+                  {sector.industryCategory || 'Other'}
+                </div>
+                <div className={styles.distRight}>{percentage}% ({sector._count.id})</div>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

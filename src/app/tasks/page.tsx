@@ -3,6 +3,8 @@ import styles from './page.module.css';
 import { CheckSquare, Square, AlertCircle } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export default async function TasksPage() {
   const tasks = await prisma.action.findMany({
     include: { partner: true },

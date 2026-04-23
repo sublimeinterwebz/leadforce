@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft, PhoneCall, CheckSquare, Square, FileText, Calendar, Send, Plus } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import { notFound } from 'next/navigation';
+import QuickLogClient from '@/components/QuickLogClient';
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -126,13 +127,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         </div>
       </section>
 
-      <div className={styles.quickLog}>
-        <Plus size={20} color="var(--neutral-500)" />
-        <input type="text" placeholder="Quick log / Add note..." className={styles.quickInput} />
-        <button className={styles.quickSend}>
-          <Send size={16} color="var(--white)" />
-        </button>
-      </div>
+      <QuickLogClient partnerId={partner.id} />
 
     </div>
   );

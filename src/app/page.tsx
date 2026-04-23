@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { formatDistanceToNow, format } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Dashboard() {
   // 1. Fetch real stats
   const totalLeads = await prisma.partner.count();
