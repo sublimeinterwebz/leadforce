@@ -5,6 +5,8 @@ import { ArrowLeft, PhoneCall, CheckSquare, Square, FileText, Calendar, Send, Pl
 import { formatDistanceToNow, format } from 'date-fns';
 import { notFound } from 'next/navigation';
 import QuickLogClient from '@/components/QuickLogClient';
+import StatusSelectorClient from '@/components/StatusSelectorClient';
+import ProductManagerClient from '@/components/ProductManagerClient';
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -20,6 +22,7 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
 
   if (!partner) return notFound();
 
+  const allProducts = await prisma.product.findMany({ orderBy: { name: 'asc' } });
   const nextAction = partner.actions.find(a => a.status === 'Pending');
 
   return (
@@ -33,9 +36,8 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
           <h1 className={styles.title}>{partner.companyName}</h1>
           <div className={styles.subtitle}>ID: {partner.id.slice(0, 8).toUpperCase()}</div>
         </div>
-        <div className={`${styles.pill} ${styles.pillActive}`}>
-          {partner.overallStage}
         </div>
+        <StatusSelectorClient partnerId={partner.id} initialStage={partner.overallStage} />
       </div>
 
       {nextAction && (
@@ -52,17 +54,11 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
 
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>SERVICES</h2>
-        <div className={styles.servicesList}>
-          {partner.products.length === 0 ? (
-            <span className={styles.emptyText}>No services added</span>
-          ) : (
-            partner.products.map(pp => (
-              <span key={pp.productId} className={styles.serviceTag}>
-                {pp.product.name.toUpperCase()}
-              </span>
-            ))
-          )}
-        </div>
+        <ProductManagerClient 
+          partnerId={partner.id} 
+          currentProducts={partner.products} 
+          allProducts={allProducts} 
+        />
       </section>
 
       <section className={styles.section}>

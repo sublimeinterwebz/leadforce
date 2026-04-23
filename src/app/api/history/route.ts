@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { GoogleGenAI } from '@google/genai';
 
 export async function GET(request: Request) {
   try {
@@ -31,6 +32,38 @@ export async function POST(request: Request) {
     });
     
     await prisma.partner.update({ where: { id: partnerId }, data: { lastActivityAt: new Date() }});
+
+    // Smart AI Task Extraction
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `You are a CRM assistant. The user just typed the following note: "${content}"
+Today's date is ${new Date().toISOString()}.
+Extract any actionable tasks from the note. Return ONLY a valid JSON array. Do not use markdown blocks.
+Each object must have 'description' (string) and 'dueDate' (ISO 8601 date string).
+If there are no clear tasks, return [].`;
+
+        const aiRes = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: { responseMimeType: "application/json" }
+        });
+        
+        const tasks = JSON.parse(aiRes.text() || '[]');
+        if (Array.isArray(tasks) && tasks.length > 0) {
+          for (const task of tasks) {
+            await prisma.action.create({
+              data: { partnerId, description: task.description, dueDate: new Date(task.dueDate) }
+            });
+            await prisma.historyLog.create({
+              data: { partnerId, type: 'System', content: `AI auto-created task: ${task.description}` }
+            });
+          }
+        }
+      } catch (aiError) {
+        console.error('AI error:', aiError);
+      }
+    }
 
     return NextResponse.json(log, { status: 201 });
   } catch (error) {

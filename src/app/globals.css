@@ -1,8 +1,8 @@
 :root {
   /* Extract from Figma Design System */
-  --primary: #0047BB;
-  --primary-light: #e0ebff;
-  --primary-hover: #00368c;
+  --primary: #e10800;
+  --primary-light: #fce6e6;
+  --primary-hover: #b80600;
   
   --secondary: #065F46;
   --secondary-light: #d1fae5;

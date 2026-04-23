@@ -16,6 +16,7 @@
     "seed": "ts-node --esm false prisma/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.50.1",
     "@prisma/client": "^6.19.3",
     "date-fns": "^4.1.0",
     "dotenv": "^17.4.2",
@@ -25,7 +26,8 @@
     "next": "16.2.4",
     "prisma": "^6.19.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",

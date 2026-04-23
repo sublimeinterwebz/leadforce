@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import styles from './page.module.css';
 import Link from 'next/link';
-import { Plus, Edit2, FileText } from 'lucide-react';
+import { Plus, Edit2, FileText, UploadCloud } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
@@ -27,12 +27,17 @@ export default async function PartnersPage() {
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>PARTNERS</h1>
-          <div className={styles.subtitle}>{activeCount} Active Accounts</div>
+          <div className={styles.subtitle}>{partners.length} TOTAL DEALS</div>
+          <h1 className={styles.title}>Pipeline</h1>
         </div>
-        <Link href="/partners/new" className={styles.newBtn}>
-          <Plus size={16} /> NEW
-        </Link>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link href="/partners/import" className={styles.newBtn} style={{ background: 'var(--neutral-200)', color: 'var(--neutral-900)' }}>
+            <UploadCloud size={14} /> IMPORT
+          </Link>
+          <Link href="/partners/new" className={styles.newBtn}>
+            <Plus size={16} /> NEW
+          </Link>
+        </div>
       </div>
 
       <div className={styles.filters}>
