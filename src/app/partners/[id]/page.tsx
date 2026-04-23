@@ -36,7 +36,6 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
           <h1 className={styles.title}>{partner.companyName}</h1>
           <div className={styles.subtitle}>ID: {partner.id.slice(0, 8).toUpperCase()}</div>
         </div>
-        </div>
         <StatusSelectorClient partnerId={partner.id} initialStage={partner.overallStage} />
       </div>
 
