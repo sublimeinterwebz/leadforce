@@ -1,0 +1,107 @@
+// LeadForce Prisma Schema
+// Database: SQLite (dev) -> PostgreSQL (prod)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Overall partner pipeline stage
+// Note: SQLite does not support native enums; stored as String with validation at app layer.
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODELS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Partner {
+  id              String   @id @default(cuid())
+  companyName     String
+  keyContact      String
+  contactEmail    String?
+  contactPhone    String?
+  source          String?  // e.g. "Internal", "Bus Dev"
+  industryCategory String? // e.g. "Retail", "Precious Metals"
+  // Overall pipeline stage: Discovery | Scope Alignment | Commitment | Contracting | Delivery
+  overallStage    String   @default("Discovery")
+  lastActivityAt  DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  products    PartnerProduct[]
+  actions     Action[]
+  history     HistoryLog[]
+  documents   Document[]
+}
+
+model Product {
+  id   String @id @default(cuid())
+  name String @unique
+  // Fixed list seeded at startup:
+  // Card Acceptance, Wallet Acceptance, Erada Financing, Loyalty,
+  // EBU, Cash Collection, HR Payroll, HR Salary in Advance
+
+  partners PartnerProduct[]
+}
+
+/// Junction table: tracks per-product pipeline stage and notes for each partner
+model PartnerProduct {
+  id              String   @id @default(cuid())
+  partnerId       String
+  productId       String
+  // Per-product stage: Discovery | Scope Alignment | Commitment | Contracting | Delivery | N/A
+  stage           String   @default("Discovery")
+  discussionNotes String?  // Free-form notes per product (maps to "Discussion" column in Excel)
+  updatedAt       DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([partnerId, productId])
+}
+
+/// Action items / follow-up tasks linked to a partner
+model Action {
+  id          String   @id @default(cuid())
+  partnerId   String
+  description String
+  dueDate     DateTime
+  // Status: Pending | Completed
+  status      String   @default("Pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+}
+
+/// Full audit trail — both system-generated events and user comments
+model HistoryLog {
+  id        String   @id @default(cuid())
+  partnerId String
+  // Type: System | UserComment
+  type      String
+  content   String
+  createdAt DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+}
+
+/// Documents uploaded and attached to a partner record
+model Document {
+  id         String   @id @default(cuid())
+  partnerId  String
+  fileName   String
+  fileUrl    String   // Path to stored file
+  mimeType   String?
+  uploadedAt DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+}

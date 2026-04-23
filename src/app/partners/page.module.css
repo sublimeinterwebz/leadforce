@@ -1,0 +1,183 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--neutral-900);
+  letter-spacing: 0.5px;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+  margin-top: 4px;
+}
+
+.newBtn {
+  background: var(--primary);
+  color: var(--white);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+
+.filters {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar { display: none; }
+
+.filterChip {
+  background: var(--white);
+  border: 1px solid var(--neutral-200);
+  color: var(--neutral-500);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.activeChip {
+  background: var(--primary);
+  color: var(--white);
+  border-color: var(--primary);
+}
+
+.listHeader {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--neutral-500);
+  padding: 0 4px;
+  margin-bottom: -8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.partnerCard {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardTopRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  align-items: flex-start;
+}
+
+.partnerName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.partnerIndustry {
+  font-size: 0.65rem;
+  color: var(--neutral-500);
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.pill {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.pillActive { background: var(--secondary-light); color: var(--secondary); }
+.pillDiscovery { background: var(--primary-light); color: var(--primary); }
+
+.actionDate {
+  justify-self: end;
+  text-align: right;
+}
+
+.dateText {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.dateStatus {
+  font-size: 0.65rem;
+  color: var(--neutral-500);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.textOverdue {
+  color: var(--danger);
+}
+
+.cardActions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px dashed var(--neutral-200);
+  padding-top: 12px;
+}
+
+.actionBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--neutral-200);
+  border-radius: var(--radius-sm);
+  padding: 6px 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--neutral-800);
+  text-decoration: none;
+}
+
+.servicesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.serviceTag {
+  background: var(--primary-light);
+  color: var(--primary);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
