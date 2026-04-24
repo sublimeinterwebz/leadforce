@@ -7,6 +7,8 @@ import { notFound } from 'next/navigation';
 import QuickLogClient from '@/components/QuickLogClient';
 import StatusSelectorClient from '@/components/StatusSelectorClient';
 import ProductManagerClient from '@/components/ProductManagerClient';
+import TaskItemClient from '@/components/TaskItemClient';
+import ContactInfoClient from '@/components/ContactInfoClient';
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -39,6 +41,8 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         <StatusSelectorClient partnerId={partner.id} initialStage={partner.overallStage} />
       </div>
 
+      <ContactInfoClient partner={partner} />
+
       {nextAction && (
         <div className={styles.nextActionBanner}>
           <div className={styles.bannerLabel}>NEXT ACTION</div>
@@ -66,29 +70,12 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
         </div>
         
         <div className={styles.taskList}>
-          {partner.actions.filter(a => a.status === 'Pending').length === 0 ? (
+          {partner.actions.length === 0 ? (
             <div className={styles.emptyText}>All caught up!</div>
           ) : (
-            partner.actions.filter(a => a.status === 'Pending').map(task => {
-              const isOverdue = new Date(task.dueDate) < new Date();
-              return (
-                <div key={task.id} className={styles.taskCard}>
-                  <div className={styles.taskLeft}>
-                    <div className={`${styles.taskIndicator} ${isOverdue ? styles.indicatorDanger : styles.indicatorPrimary}`} />
-                    <div>
-                      <div className={styles.taskTitle}>
-                        {isOverdue ? <strong className={styles.textDanger}>Overdue: </strong> : ''}
-                        {task.description}
-                      </div>
-                      <div className={`${styles.taskTime} ${isOverdue ? styles.textDanger : ''}`}>
-                        {isOverdue ? `Due ${formatDistanceToNow(new Date(task.dueDate))} ago` : `Due ${format(new Date(task.dueDate), 'MMM dd')}`}
-                      </div>
-                    </div>
-                  </div>
-                  <Square size={20} color="var(--neutral-500)" />
-                </div>
-              );
-            })
+            partner.actions.map(task => (
+              <TaskItemClient key={task.id} task={task} />
+            ))
           )}
         </div>
       </section>

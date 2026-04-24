@@ -4,23 +4,46 @@ import { prisma } from '@/lib/prisma';
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    const { status, description, dueDate } = await request.json();
+    const body = await request.json();
     
-    const data: any = {};
-    if (status !== undefined) data.status = status;
-    if (description !== undefined) data.description = description;
-    if (dueDate !== undefined) data.dueDate = new Date(dueDate);
-
     const action = await prisma.action.update({
       where: { id: resolvedParams.id },
-      data,
+      data: { status: body.status }
     });
-    
-    // Update partner last activity
-    await prisma.partner.update({ where: { id: action.partnerId }, data: { lastActivityAt: new Date() }});
+
+    if (body.status === 'Completed') {
+      await prisma.historyLog.create({
+        data: {
+          partnerId: action.partnerId,
+          type: 'System',
+          content: `Task completed: ${action.description}`
+        }
+      });
+    }
 
     return NextResponse.json(action);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update action' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const resolvedParams = await params;
+    const action = await prisma.action.delete({
+      where: { id: resolvedParams.id }
+    });
+
+    await prisma.historyLog.create({
+      data: {
+        partnerId: action.partnerId,
+        type: 'System',
+        content: `Task deleted: ${action.description}`
+      }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete action' }, { status: 500 });
   }
 }

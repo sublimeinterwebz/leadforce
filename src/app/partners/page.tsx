@@ -6,8 +6,12 @@ import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PartnersPage() {
+export default async function PartnersPage({ searchParams }: { searchParams: Promise<{ stage?: string }> }) {
+  const resolvedParams = await searchParams;
+  const currentStage = resolvedParams.stage || 'ALL';
+
   const partners = await prisma.partner.findMany({
+    where: currentStage !== 'ALL' ? { overallStage: currentStage } : undefined,
     include: {
       products: { include: { product: true } },
       actions: {
@@ -41,10 +45,12 @@ export default async function PartnersPage() {
       </div>
 
       <div className={styles.filters}>
-        <button className={`${styles.filterChip} ${styles.activeChip}`}>ALL</button>
-        <button className={styles.filterChip}>OVERDUE</button>
-        <button className={styles.filterChip}>RETAIL</button>
-        <button className={styles.filterChip}>TECH</button>
+        <Link href="/partners" className={`${styles.filterChip} ${currentStage === 'ALL' ? styles.activeChip : ''}`}>ALL</Link>
+        {['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'No Feedback'].map(stage => (
+          <Link key={stage} href={`/partners?stage=${stage}`} className={`${styles.filterChip} ${currentStage === stage ? styles.activeChip : ''}`}>
+            {stage.toUpperCase()}
+          </Link>
+        ))}
       </div>
 
       <div className={styles.listHeader}>

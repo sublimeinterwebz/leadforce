@@ -19,7 +19,7 @@ export default function ProductManagerClient({
   const [selectedProductId, setSelectedProductId] = useState('');
   const [selectedStage, setSelectedStage] = useState('Discovery');
 
-  const STAGES = ['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'N/A'];
+  const STAGES = ['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'No Feedback'];
 
   const handleUpdate = async (productId: string, stage: string) => {
     setLoading(true);

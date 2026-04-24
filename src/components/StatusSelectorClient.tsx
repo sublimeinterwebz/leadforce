@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const STAGES = ['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'Closed Lost'];
+const STAGES = ['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'No Feedback'];
 
 export default function StatusSelectorClient({ partnerId, initialStage }: { partnerId: string, initialStage: string }) {
   const router = useRouter();
