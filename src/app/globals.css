@@ -51,12 +51,13 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Mobile App Layout Container */
+/* Responsive Web/Mobile App Layout Container */
 .app-container {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  max-width: 480px; /* Constrain for desktop viewing to look like mobile app */
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   background-color: var(--neutral-50);
   position: relative;
