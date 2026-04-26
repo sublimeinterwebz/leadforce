@@ -19,12 +19,34 @@ function findCol(row: any, ...candidates: string[]): string | undefined {
   return undefined;
 }
 
+// The 8 known services — used to detect service columns in the Excel
+const KNOWN_SERVICES = [
+  'Card Acceptance', 'Wallet Acceptance', 'Erada Financing',
+  'Loyalty', 'EBU', 'Cash Collection', 'HR Payroll', 'HR Salary in advance'
+];
+
+// Find if a column header matches a known service (fuzzy, case-insensitive)
+function findServiceColumns(headers: string[]): { header: string; serviceName: string }[] {
+  const matches: { header: string; serviceName: string }[] = [];
+  for (const header of headers) {
+    const h = header.trim().toLowerCase();
+    for (const service of KNOWN_SERVICES) {
+      if (h.includes(service.toLowerCase()) || service.toLowerCase().includes(h)) {
+        matches.push({ header, serviceName: service });
+        break;
+      }
+    }
+  }
+  return matches;
+}
+
 export default function ImportPartnersPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const [rawHeaders, setRawHeaders] = useState<string[]>([]);
   const [rawRowCount, setRawRowCount] = useState(0);
+  const [detectedServices, setDetectedServices] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [fileSelected, setFileSelected] = useState(false);
 
@@ -48,20 +70,36 @@ export default function ImportPartnersPage() {
           return;
         }
 
-        // Save raw info for debugging
-        setRawHeaders(Object.keys(data[0]));
+        const headers = Object.keys(data[0]);
+        setRawHeaders(headers);
         setRawRowCount(data.length);
 
+        // Detect service columns
+        const serviceMatches = findServiceColumns(headers);
+        setDetectedServices(serviceMatches.map(m => m.serviceName));
+
         // Fuzzy map excel columns to our schema
-        const mappedData = data.map((row: any) => ({
-          companyName: findCol(row, 'company', 'client', 'partner', 'name', 'organization', 'org'),
-          keyContact: findCol(row, 'contact', 'key contact', 'person', 'representative') || 'Unknown',
-          contactEmail: findCol(row, 'email', 'e-mail', 'mail'),
-          contactPhone: findCol(row, 'phone', 'mobile', 'tel', 'number'),
-          source: findCol(row, 'source', 'lead source', 'channel', 'origin'),
-          industryCategory: findCol(row, 'industry', 'sector', 'category', 'vertical'),
-          overallStage: findCol(row, 'stage', 'status', 'pipeline', 'phase') || 'Discovery'
-        })).filter(r => r.companyName);
+        const mappedData = data.map((row: any) => {
+          // Extract services: for each matched service column, read the cell value as the stage
+          const services: { serviceName: string; stage: string }[] = [];
+          for (const { header, serviceName } of serviceMatches) {
+            const cellValue = row[header];
+            if (cellValue !== undefined && cellValue !== null && String(cellValue).trim() !== '') {
+              services.push({ serviceName, stage: String(cellValue).trim() });
+            }
+          }
+
+          return {
+            companyName: findCol(row, 'company', 'client', 'partner', 'name', 'organization', 'org'),
+            keyContact: findCol(row, 'contact', 'key contact', 'person', 'representative') || 'Unknown',
+            contactEmail: findCol(row, 'email', 'e-mail', 'mail'),
+            contactPhone: findCol(row, 'phone', 'mobile', 'tel', 'number'),
+            source: findCol(row, 'source', 'lead source', 'channel', 'origin'),
+            industryCategory: findCol(row, 'industry', 'sector', 'category', 'vertical'),
+            overallStage: findCol(row, 'stage', 'status', 'pipeline', 'phase') || 'Discovery',
+            services
+          };
+        }).filter(r => r.companyName);
 
         setPreviewData(mappedData);
 
@@ -125,7 +163,7 @@ export default function ImportPartnersPage() {
         <UploadCloud size={48} color="var(--primary)" style={{ marginBottom: '16px' }} />
         <h3 style={{ marginBottom: '8px' }}>Select File</h3>
         <p style={{ fontSize: '0.875rem', color: 'var(--neutral-500)', marginBottom: '16px' }}>
-          We auto-detect columns like: Company, Contact, Email, Phone, Industry, Stage
+          We auto-detect columns like: Company, Contact, Email, Phone, Industry, Stage, and your 8 service columns
         </p>
         <input 
           type="file" 
@@ -147,6 +185,18 @@ export default function ImportPartnersPage() {
               </span>
             ))}
           </div>
+          {detectedServices.length > 0 && (
+            <div style={{ marginTop: '12px' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>✓ Service columns detected:</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                {detectedServices.map((s, i) => (
+                  <span key={i} style={{ background: 'var(--secondary-light)', color: 'var(--secondary)', padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -163,8 +213,8 @@ export default function ImportPartnersPage() {
                 <tr style={{ background: 'var(--neutral-100)', position: 'sticky', top: 0 }}>
                   <th style={{ padding: '8px 12px' }}>Company</th>
                   <th style={{ padding: '8px 12px' }}>Contact</th>
-                  <th style={{ padding: '8px 12px' }}>Email</th>
                   <th style={{ padding: '8px 12px' }}>Stage</th>
+                  <th style={{ padding: '8px 12px' }}>Services</th>
                 </tr>
               </thead>
               <tbody>
@@ -172,11 +222,19 @@ export default function ImportPartnersPage() {
                   <tr key={i} style={{ borderBottom: '1px solid var(--neutral-200)' }}>
                     <td style={{ padding: '8px 12px', fontWeight: 600 }}>{r.companyName}</td>
                     <td style={{ padding: '8px 12px' }}>{r.keyContact || '-'}</td>
-                    <td style={{ padding: '8px 12px', color: 'var(--neutral-500)' }}>{r.contactEmail || '-'}</td>
                     <td style={{ padding: '8px 12px' }}>
                       <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600 }}>
                         {r.overallStage}
                       </span>
+                    </td>
+                    <td style={{ padding: '8px 12px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                        {r.services && r.services.length > 0 ? r.services.map((s: any, j: number) => (
+                          <span key={j} style={{ background: 'var(--secondary-light)', color: 'var(--secondary)', padding: '2px 6px', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 600 }}>
+                            {s.serviceName}: {s.stage}
+                          </span>
+                        )) : <span style={{ color: 'var(--neutral-500)', fontSize: '0.75rem' }}>-</span>}
+                      </div>
                     </td>
                   </tr>
                 ))}

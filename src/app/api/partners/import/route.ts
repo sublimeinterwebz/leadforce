@@ -9,13 +9,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No partners provided' }, { status: 400 });
     }
 
-    // Using a transaction to insert all partners and log the import
+    // Pre-fetch all products so we can match by name
+    const allProducts = await prisma.product.findMany();
+
     const result = await prisma.$transaction(async (tx) => {
       let createdCount = 0;
       for (const p of partners) {
         if (!p.companyName) continue;
         
-        await tx.partner.create({
+        const partner = await tx.partner.create({
           data: {
             companyName: String(p.companyName).substring(0, 255),
             keyContact: p.keyContact ? String(p.keyContact).substring(0, 255) : 'Unknown',
@@ -32,6 +34,34 @@ export async function POST(request: Request) {
             }
           }
         });
+
+        // Create service assignments if present
+        if (Array.isArray(p.services) && p.services.length > 0) {
+          for (const svc of p.services) {
+            // Find the matching product (case-insensitive)
+            const product = allProducts.find(
+              prod => prod.name.toLowerCase() === svc.serviceName.toLowerCase()
+            );
+            if (product) {
+              await tx.partnerProduct.create({
+                data: {
+                  partnerId: partner.id,
+                  productId: product.id,
+                  stage: svc.stage || 'Discovery',
+                }
+              });
+            }
+          }
+
+          await tx.historyLog.create({
+            data: {
+              partnerId: partner.id,
+              type: 'System',
+              content: `${p.services.length} service(s) assigned via Excel Import`,
+            }
+          });
+        }
+
         createdCount++;
       }
       return createdCount;
@@ -43,3 +73,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to import partners' }, { status: 500 });
   }
 }
+
