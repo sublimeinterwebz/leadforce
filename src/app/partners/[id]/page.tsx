@@ -9,6 +9,7 @@ import StatusSelectorClient from '@/components/StatusSelectorClient';
 import ProductManagerClient from '@/components/ProductManagerClient';
 import TaskItemClient from '@/components/TaskItemClient';
 import ContactInfoClient from '@/components/ContactInfoClient';
+import EditPartnerClient from '@/components/EditPartnerClient';
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -42,6 +43,8 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <ContactInfoClient partner={partner} />
+
+      <EditPartnerClient partner={partner} />
 
       {nextAction && (
         <div className={styles.nextActionBanner}>
