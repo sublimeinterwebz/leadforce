@@ -47,7 +47,11 @@ LeadForce supports robust bulk importing (`/partners/import`):
 
 ### 2.5 Task & Pipeline Management
 - **Pipeline Stages**: The global system operates on standard stages: `Discovery`, `Scope Alignment`, `Commitment`, `Contracting`, `Delivery`, `No Feedback`.
-- **Task CRUD**: Users can check off pending tasks or delete them directly from the Partner's UI. This is powered by interactive client-side React components communicating with `PATCH`/`DELETE` API endpoints (`/api/actions/[id]`).
+- **Task CRUD**: Users can manually create tasks or manage them interactively (check off, delete) from both the individual Partner's UI and the global `/tasks` page. This is powered by interactive client-side React components communicating with `PATCH`/`DELETE`/`POST` API endpoints (`/api/actions`).
+- **Partner Management**: Full CRUD is supported via `EditPartnerClient` and `DeletePartnerClient`, ensuring accurate and maintainable records.
+
+### 2.6 Document Management
+- **Uploads**: Users can upload contracts or supporting documents directly to a Partner's profile using the `DocumentManagerClient`. Files are currently stored and served locally.
 
 ---
 

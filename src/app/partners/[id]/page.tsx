@@ -10,6 +10,9 @@ import ProductManagerClient from '@/components/ProductManagerClient';
 import TaskItemClient from '@/components/TaskItemClient';
 import ContactInfoClient from '@/components/ContactInfoClient';
 import EditPartnerClient from '@/components/EditPartnerClient';
+import DeletePartnerClient from '@/components/DeletePartnerClient';
+import CreateTaskClient from '@/components/CreateTaskClient';
+import DocumentManagerClient from '@/components/DocumentManagerClient';
 
 export default async function PartnerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -65,11 +68,14 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
           currentProducts={partner.products} 
           allProducts={allProducts} 
         />
+        
+        <DocumentManagerClient partnerId={partner.id} documents={partner.documents} />
       </section>
 
       <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>PENDING TASKS</h2>
+        <div className={styles.sectionHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h2 className={styles.sectionTitle} style={{ marginBottom: 0 }}>PENDING TASKS</h2>
+          <CreateTaskClient partnerId={partner.id} />
         </div>
         
         <div className={styles.taskList}>
@@ -110,6 +116,8 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
       </section>
 
       <QuickLogClient partnerId={partner.id} />
+
+      <DeletePartnerClient partnerId={partner.id} companyName={partner.companyName} />
 
     </div>
   );

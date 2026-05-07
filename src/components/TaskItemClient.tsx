@@ -51,6 +51,7 @@ export default function TaskItemClient({ task }: { task: any }) {
           </div>
           <div className={`${styles.taskTime} ${isOverdue && task.status === 'Pending' ? styles.textDanger : ''}`}>
             {isOverdue && task.status === 'Pending' ? `Due ${formatDistanceToNow(new Date(task.dueDate))} ago` : `Due ${format(new Date(task.dueDate), 'MMM dd')}`}
+            {task.partner && ` • ${task.partner.companyName}`}
           </div>
         </div>
       </div>
