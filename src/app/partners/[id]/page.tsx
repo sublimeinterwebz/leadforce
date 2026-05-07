@@ -22,7 +22,8 @@ export default async function PartnerDetailPage({ params }: { params: Promise<{ 
     include: {
       products: { include: { product: true } },
       actions: { orderBy: { dueDate: 'asc' } },
-      history: { orderBy: { createdAt: 'desc' } }
+      history: { orderBy: { createdAt: 'desc' } },
+      documents: { orderBy: { uploadedAt: 'desc' } }
     }
   });
 
