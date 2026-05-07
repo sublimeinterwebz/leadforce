@@ -6,12 +6,19 @@ import { format } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
-export default async function PartnersPage({ searchParams }: { searchParams: Promise<{ stage?: string }> }) {
+export default async function PartnersPage({ searchParams }: { searchParams: Promise<{ stage?: string, search?: string }> }) {
   const resolvedParams = await searchParams;
   const currentStage = resolvedParams.stage || 'ALL';
+  const searchQuery = resolvedParams.search || '';
+
+  const whereClause: any = {};
+  if (currentStage !== 'ALL') whereClause.overallStage = currentStage;
+  if (searchQuery) {
+    whereClause.companyName = { contains: searchQuery, mode: 'insensitive' };
+  }
 
   const partners = await prisma.partner.findMany({
-    where: currentStage !== 'ALL' ? { overallStage: currentStage } : undefined,
+    where: whereClause,
     include: {
       products: { include: { product: true } },
       actions: {
@@ -60,6 +67,11 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
       </div>
 
       <div className={styles.list}>
+        {partners.length === 0 && (
+          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--neutral-500)', background: 'var(--white)', borderRadius: 'var(--radius-lg)' }}>
+            No partners found{searchQuery ? ` matching "${searchQuery}"` : ''}.
+          </div>
+        )}
         {partners.map(partner => {
           const nextAction = partner.actions[0];
           const isOverdue = nextAction && new Date(nextAction.dueDate) < new Date();

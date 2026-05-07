@@ -7,27 +7,30 @@ import { formatDistanceToNow, format } from 'date-fns';
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
-  // 0. Auto-seed products if empty
-  const productCount = await prisma.product.count();
-  if (productCount === 0) {
-    const defaultProducts = [
-      'Card Acceptance', 'Wallet Acceptance', 'Erada Financing', 
-      'Loyalty', 'EBU', 'Cash Collection', 'HR Payroll', 'HR Salary in advance'
-    ];
-    for (const name of defaultProducts) {
-      await prisma.product.upsert({
-        where: { name },
-        update: {},
-        create: { name }
-      });
-    }
-  }
-
   // 1. Fetch real stats
   const totalLeads = await prisma.partner.count();
   const activeDeals = await prisma.partner.count({
     where: { overallStage: { notIn: ['Delivery', 'Closed Lost'] } }
   });
+
+  // Calculate dynamic week-over-week trend for Active Deals
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  const activeDealsLastWeek = await prisma.partner.count({
+    where: { 
+      overallStage: { notIn: ['Delivery', 'Closed Lost'] },
+      createdAt: { lt: sevenDaysAgo }
+    }
+  });
+
+  let trendPercent = 0;
+  if (activeDealsLastWeek > 0) {
+    trendPercent = Math.round(((activeDeals - activeDealsLastWeek) / activeDealsLastWeek) * 100);
+  } else if (activeDeals > 0) {
+    trendPercent = 100; // 100% growth if there were no deals last week but there are deals now
+  }
+  const isTrendPositive = trendPercent >= 0;
 
   // 2. Fetch overdue tasks
   const overdueTasks = await prisma.action.findMany({
@@ -65,8 +68,9 @@ export default async function Dashboard() {
           <div className={styles.statLabel}>ACTIVE DEALS</div>
           <div className={styles.statValue}>
             {activeDeals}
-            {/* Hardcoded trend for visual purposes until we have historical tracking */}
-            <span className={styles.trendUp}>+12%</span>
+            <span className={isTrendPositive ? styles.trendUp : styles.trendDown} style={!isTrendPositive ? { color: 'var(--danger)', background: 'var(--danger-light)' } : {}}>
+              {isTrendPositive ? '+' : ''}{trendPercent}%
+            </span>
           </div>
         </div>
         <div className="card" style={{ marginBottom: 0 }}>

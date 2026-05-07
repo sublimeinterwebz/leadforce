@@ -25,7 +25,11 @@ LeadForce is built using a modern, scalable, and type-safe stack:
 - **Design Philosophy**: The application is designed to be mobile-first but fully fluid up to `1200px` for desktop users. It prioritizes a premium look using standard brand colors (primary red: `#e10800`).
 - **Global CSS Variables**: All core colors, spacing, and border radii are defined in `globals.css` using native CSS variables (`--primary`, `--neutral-100`, etc.), making the app highly consistent and easily themeable.
 
-### 2.2 Authentication Middleware
+### 2.2 Global Header & Search
+- A persistent `GlobalSearchClient` resides in the Header.
+- It debounces input and modifies the URL parameters (`/partners?search=...`), allowing users to instantly filter the pipeline from anywhere in the app.
+
+### 2.3 Authentication Middleware
 Authentication is handled via a lightweight custom session cookie (`leadforce_session`). 
 - All frontend and `/api/` routes are protected by Next.js `middleware.ts`.
 - The middleware redirects unauthenticated frontend users to `/login` and blocks authenticated users from accessing the login page.
@@ -52,6 +56,10 @@ LeadForce supports robust bulk importing (`/partners/import`):
 
 ### 2.6 Document Management
 - **Uploads**: Users can upload contracts or supporting documents directly to a Partner's profile using the `DocumentManagerClient`. Files are currently stored and served locally.
+
+### 2.7 Analytics & Reporting
+- The Dashboard (`/page.tsx`) calculates real-time week-over-week growth trends for active deals and pipeline volume.
+- The Reports page (`/reports`) dynamically aggregates the database to present Conversion Rates (calculated against delivered deals), Active Service Assignments, Weekly Engagement charts (derived from `HistoryLog`), and alerts for Stagnant Deals (no activity > 14 days).
 
 ---
 

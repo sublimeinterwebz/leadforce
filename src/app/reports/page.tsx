@@ -25,6 +25,46 @@ export default async function ReportsPage() {
     orderBy: { _count: { id: 'desc' } }
   });
 
+  // Calculate dynamic conversion rate
+  const totalPartners = await prisma.partner.count();
+  const deliveredPartners = await prisma.partner.count({ where: { overallStage: 'Delivery' } });
+  const conversionRate = totalPartners === 0 ? 0 : ((deliveredPartners / totalPartners) * 100).toFixed(1);
+
+  // Active Service Assignments
+  const activeAssignments = await prisma.partnerProduct.count();
+
+  // Weekly Engagement Chart Data
+  const today = new Date();
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1)); // Monday
+  startOfWeek.setHours(0,0,0,0);
+
+  const logsThisWeek = await prisma.historyLog.findMany({
+    where: { createdAt: { gte: startOfWeek } },
+    select: { createdAt: true }
+  });
+
+  const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Mon-Sun
+  logsThisWeek.forEach(log => {
+    let day = log.createdAt.getDay() - 1;
+    if (day === -1) day = 6; // Sunday is 0 in JS, mapped to 6
+    dayCounts[day]++;
+  });
+
+  const maxCount = Math.max(...dayCounts, 1);
+  const dayHeights = dayCounts.map(count => Math.round((count / maxCount) * 100));
+
+  // Stagnant Deals Alert
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+  const stagnantDeals = await prisma.partner.findMany({
+    where: { 
+      overallStage: { notIn: ['Delivery', 'Closed Lost', 'No Feedback'] },
+      lastActivityAt: { lt: fourteenDaysAgo }
+    },
+    select: { companyName: true, overallStage: true }
+  });
+
   return (
     <div className={styles.container}>
       
@@ -41,14 +81,14 @@ export default async function ReportsPage() {
       {/* Top Stats */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>CONVERSION</div>
-          <div className={styles.statValue}>24.8%</div>
-          <div className={styles.trendUp}>↗ +2.1%</div>
+          <div className={styles.statLabel}>CONVERSION (DELIVERED)</div>
+          <div className={styles.statValue}>{conversionRate}%</div>
+          <div className={styles.trendUp}>{deliveredPartners} Total Delivered</div>
         </div>
         <div className={styles.statCard}>
-          <div className={styles.statLabel}>REVENUE (Est)</div>
-          <div className={styles.statValue}>$1.2M</div>
-          <div className={styles.trendDown}>↘ -0.4%</div>
+          <div className={styles.statLabel}>ACTIVE ASSIGNMENTS</div>
+          <div className={styles.statValue}>{activeAssignments}</div>
+          <div className={styles.trendUp}>Across {totalPartners} Partners</div>
         </div>
       </div>
 
@@ -56,7 +96,7 @@ export default async function ReportsPage() {
       <section className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>PIPELINE VELOCITY</h2>
-          <span className={styles.timeframe}>Q3 FY24</span>
+          <span className={styles.timeframe}>{new Date().getFullYear()}</span>
         </div>
         <div className={styles.funnelContainer}>
           <div className={styles.funnelRow} style={{ width: '100%' }}>
@@ -82,13 +122,13 @@ export default async function ReportsPage() {
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>WEEKLY ENGAGEMENT</h2>
         <div className={styles.barChart}>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '60%' }} /><span>M</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '100%' }} /><span>T</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '80%' }} /><span>W</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '40%' }} /><span>T</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '50%' }} /><span>F</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '10%', background: 'var(--neutral-200)' }} /><span>S</span></div>
-          <div className={styles.barCol}><div className={styles.barFill} style={{ height: '10%', background: 'var(--neutral-200)' }} /><span>S</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[0]}%`, background: dayHeights[0] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>M</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[1]}%`, background: dayHeights[1] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>T</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[2]}%`, background: dayHeights[2] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>W</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[3]}%`, background: dayHeights[3] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>T</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[4]}%`, background: dayHeights[4] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>F</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[5]}%`, background: dayHeights[5] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>S</span></div>
+          <div className={styles.barCol}><div className={styles.barFill} style={{ height: `${dayHeights[6]}%`, background: dayHeights[6] === 0 ? 'var(--neutral-200)' : 'var(--primary)' }} /><span>S</span></div>
         </div>
       </section>
 
@@ -133,14 +173,25 @@ export default async function ReportsPage() {
       {/* Active Alerts */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>ACTIVE ALERTS</h2>
-        <div className={styles.alertCard}>
-          <div className={styles.alertHeader}>
-            <AlertTriangle size={16} /> STAGNANT PIPELINE
+        {stagnantDeals.length === 0 ? (
+          <div className={styles.alertCard} style={{ borderColor: 'var(--neutral-200)', background: 'var(--white)' }}>
+            <div className={styles.alertBody} style={{ color: 'var(--neutral-600)' }}>
+              No stagnant deals. Pipeline is healthy!
+            </div>
           </div>
-          <div className={styles.alertBody}>
-            3 high-value deals in 'Negotiation' have had no activity for 14 days.
+        ) : (
+          <div className={styles.alertCard}>
+            <div className={styles.alertHeader}>
+              <AlertTriangle size={16} /> STAGNANT PIPELINE
+            </div>
+            <div className={styles.alertBody}>
+              {stagnantDeals.length} active deals have had no activity for 14 days.<br/>
+              <span style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginTop: '6px' }}>
+                {stagnantDeals.slice(0, 3).map(d => d.companyName).join(', ')} {stagnantDeals.length > 3 ? '...' : ''}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
     </div>
