@@ -27,9 +27,9 @@ LeadForce is built using a modern, scalable, and type-safe stack:
 
 ### 2.2 Authentication Middleware
 Authentication is handled via a lightweight custom session cookie (`leadforce_session`). 
-- Routes are protected by Next.js `middleware.ts`.
-- The middleware redirects unauthenticated users to `/login` and blocks authenticated users from accessing the login page.
-- *Note: For development UI/UX testing, the redirect logic is sometimes temporarily commented out.*
+- All frontend and `/api/` routes are protected by Next.js `middleware.ts`.
+- The middleware redirects unauthenticated frontend users to `/login` and blocks authenticated users from accessing the login page.
+- Unauthenticated requests to `/api/` endpoints immediately return a `401 Unauthorized` response.
 
 ### 2.3 Intelligent Notes & Task Parsing
 The CRM features an AI-powered note logging system (`/api/history`):

@@ -28,9 +28,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     // Get old partner to check status change
     const oldPartner = await prisma.partner.findUnique({ where: { id: resolvedParams.id } });
     
+    // Destructure only allowed fields to prevent injection
+    const { 
+      companyName, keyContact, contactEmail, contactPhone, 
+      source, industryCategory, overallStage 
+    } = body;
+    
     const partner = await prisma.partner.update({
       where: { id: resolvedParams.id },
-      data: { ...body, lastActivityAt: new Date() }
+      data: { 
+        ...(companyName && { companyName }),
+        ...(keyContact && { keyContact }),
+        ...(contactEmail !== undefined && { contactEmail }),
+        ...(contactPhone !== undefined && { contactPhone }),
+        ...(source !== undefined && { source }),
+        ...(industryCategory !== undefined && { industryCategory }),
+        ...(overallStage && { overallStage }),
+        lastActivityAt: new Date() 
+      }
     });
 
     // Log if stage changed

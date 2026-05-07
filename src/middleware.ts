@@ -5,8 +5,16 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get('leadforce_session');
   const path = request.nextUrl.pathname;
   
-  // Protect all routes except login and static files
-  if (!session && !path.startsWith('/login') && !path.startsWith('/api/')) {
+  // Protect API routes: Return 401 Unauthorized for unauthenticated API requests
+  if (!session && path.startsWith('/api/')) {
+    return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // Protect frontend routes except login and static files
+  if (!session && !path.startsWith('/login')) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
