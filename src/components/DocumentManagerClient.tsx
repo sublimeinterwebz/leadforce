@@ -3,8 +3,11 @@
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FileText, Upload, Trash2, Download } from 'lucide-react';
+import { Document } from '@prisma/client';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-export default function DocumentManagerClient({ partnerId, documents }: { partnerId: string, documents: any[] }) {
+export default function DocumentManagerClient({ partnerId, documents }: { partnerId: string, documents: Document[] }) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -18,14 +21,25 @@ export default function DocumentManagerClient({ partnerId, documents }: { partne
     if (!file) return;
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('partnerId', partnerId);
-
+    
     try {
+      // 1. Upload to Firebase Storage
+      const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const storageRef = ref(storage, `uploads/${partnerId}/${filename}`);
+      
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // 2. Save document metadata to DB
       const res = await fetch('/api/upload', {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partnerId,
+          fileName: file.name,
+          fileUrl: downloadURL,
+          mimeType: file.type
+        }),
       });
 
       if (res.ok) {

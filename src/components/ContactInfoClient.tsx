@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { Phone, Mail, User, ChevronDown, ChevronUp } from 'lucide-react';
 import styles from '../app/partners/[id]/page.module.css';
+import { Partner } from '@prisma/client';
 
-export default function ContactInfoClient({ partner }: { partner: any }) {
+export default function ContactInfoClient({ partner }: { partner: Partner }) {
   const [open, setOpen] = useState(false);
 
   return (

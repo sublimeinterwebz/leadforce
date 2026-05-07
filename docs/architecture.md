@@ -55,7 +55,10 @@ LeadForce supports robust bulk importing (`/partners/import`):
 - **Partner Management**: Full CRUD is supported via `EditPartnerClient` and `DeletePartnerClient`, ensuring accurate and maintainable records.
 
 ### 2.6 Document Management
-- **Uploads**: Users can upload contracts or supporting documents directly to a Partner's profile using the `DocumentManagerClient`. Files are currently stored and served locally.
+- **Uploads**: Users can upload contracts or supporting documents directly to a Partner's profile using the `DocumentManagerClient`. Files are uploaded securely from the client directly to **Firebase Storage**, and only the resulting secure URLs are stored in the PostgreSQL database.
+
+### 2.7 App Router Boundaries
+- **Loading & Error States**: The application leverages native Next.js `loading.tsx` and `error.tsx` boundaries to provide instant UI feedback during server-side data fetching and graceful degradation if an exception occurs.
 
 ### 2.7 Analytics & Reporting
 - The Dashboard (`/page.tsx`) calculates real-time week-over-week growth trends for active deals and pipeline volume.

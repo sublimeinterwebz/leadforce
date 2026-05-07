@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus } from 'lucide-react';
+import { Product, PartnerProduct } from '@prisma/client';
 
 export default function ProductManagerClient({ 
   partnerId, 
@@ -10,8 +11,8 @@ export default function ProductManagerClient({
   allProducts 
 }: { 
   partnerId: string;
-  currentProducts: any[];
-  allProducts: any[];
+  currentProducts: (PartnerProduct & { product: Product })[];
+  allProducts: Product[];
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);

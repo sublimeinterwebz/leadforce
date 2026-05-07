@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pencil, X, Save } from 'lucide-react';
+import { Partner } from '@prisma/client';
 
 const STAGES = ['Discovery', 'Scope Alignment', 'Commitment', 'Contracting', 'Delivery', 'No Feedback'];
 
-export default function EditPartnerClient({ partner }: { partner: any }) {
+export default function EditPartnerClient({ partner }: { partner: Partner }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { Square, CheckSquare, Trash2 } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
 import styles from '../app/partners/[id]/page.module.css';
+import { Action, Partner } from '@prisma/client';
 
-export default function TaskItemClient({ task }: { task: any }) {
+export default function TaskItemClient({ task }: { task: Action & { partner?: Partner } }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
